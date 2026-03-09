@@ -1,50 +1,45 @@
 #!/bin/bash
 
-LABDIR="/home/kali/llab9"
+LABDIR=$(pwd)
 DOCKERDIR="$LABDIR/Dockerized"
 
-echo "[+] Updating packages..."
-sudo apt update
+echo "[+] Updating system..."
+sudo apt update -y
 
-echo "[+] Installing Wireshark..."
-sudo apt install -y wireshark
+echo "[+] Installing dependencies..."
+sudo apt install -y docker.io docker-compose python3-flask python3-requests wireshark
 
-echo "[+] Configuring Wireshark permissions..."
-sudo usermod -aG wireshark $USER
-sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap
-newgrp wireshark <<EOF
-echo "Wireshark permissions applied"
-EOF
-
-echo "[+] Installing Docker and legacy docker-compose..."
-sudo apt install -y docker.io docker-compose
-
-echo "[+] Starting Docker service..."
+echo "[+] Enabling Docker..."
 sudo systemctl enable --now docker
 
-echo "[+] Adding user to docker group..."
-sudo usermod -aG docker $USER
-newgrp docker <<EOF
-echo "Docker permissions applied"
-EOF
+echo "[+] Configuring Wireshark capture permissions..."
+sudo usermod -aG wireshark $USER
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap
 
-echo "[+] Moving to Docker project..."
-cd $DOCKERDIR
+echo "[+] Cleaning previous lab runs..."
+sudo docker rm -f mdo-web-container 2>/dev/null
+pkill -f login_server.py 2>/dev/null
+pkill -f send_requests.py 2>/dev/null
 
-echo "[+] Building container with docker-compose..."
-docker-compose build
+echo "[+] Building Docker container..."
+cd "$DOCKERDIR"
+sudo docker compose build
 
-echo "[+] Starting container..."
-docker-compose up -d
+echo "[+] Starting Docker web server..."
+sudo docker compose up -d
+
+echo "[+] Waiting for container to initialize..."
+sleep 5
 
 echo "[+] Starting login server..."
-python3 $LABDIR/login_server.py &
+cd "$LABDIR"
+python3 login_server.py &
 
 echo "[+] Starting HTTP request generator..."
-python3 $LABDIR/send_requests.py &
+python3 send_requests.py &
 
 echo ""
-echo "===================================="
+echo "======================================"
 echo "LAB RUNNING"
 echo ""
 echo "Docker web app:"
@@ -55,3 +50,4 @@ echo "http://localhost:5550"
 echo ""
 echo "Wireshark filter:"
 echo "tcp.port == 5550"
+echo "======================================"
