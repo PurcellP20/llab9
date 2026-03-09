@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AF DCGS - Intelligence Reports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="classification-banner top">
+        <span class="classification-text">UNCLASSIFIED//SIX</span>
+    </div>
+
+    {% if has_future_intel %}
+    <div class="success-banner">
+        SEE: CHALLENGE COMPLETED
+    </div>
+    {% endif %}
+
+    <!-- Authorization Error Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-icon">🚫</span>
+                <h3>ACCESS DENIED</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Authorization Level Insufficient</strong></p>
+                <p>You are not authorized to view FUTURE intelligence reports.</p>
+                <p>Required clearance: TOP SIX//SEVEN</p>
+                <p>Contact your Intelligence Oversight Officer for access requests.</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn-modal-close">ACKNOWLEDGED</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-left">
+            <div class="emblem-small">
+                <svg class="eagle-icon-small" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 20 L45 30 L40 35 L35 38 L30 40 L25 41 L20 40 L25 45 L30 48 L35 50 L30 52 L25 55 L20 60 L25 59 L30 60 L35 62 L40 65 L45 70 L50 80 L55 70 L60 65 L65 62 L70 60 L75 59 L80 60 L75 55 L70 52 L65 50 L70 48 L75 45 L80 40 L75 41 L70 40 L65 38 L60 35 L55 30 Z"
+                          fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
+                    <circle cx="50" cy="45" r="8" fill="#1e293b" stroke="#60a5fa" stroke-width="1"/>
+                    <path d="M50 38 L48 42 L52 42 Z" fill="#60a5fa"/>
+                </svg>
+            </div>
+            <div class="header-text">
+                <h1>AF DCGS INTELLIGENCE DATABASE</h1>
+                <div class="breadcrumb">Intelligence Reports › Search & Analysis</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-badge">
+                <span class="user-icon">👤</span>
+                <div class="user-details">
+                    <div class="user-name">{{ username }}</div>
+                    <div class="user-role">Intelligence Analyst</div>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="btn-logout">
+                <span>🚪</span> LOGOFF
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="left-section">
+                <div class="search-section">
+                    <div class="section-header">
+                        <h2>🔍 INTELLIGENCE SEARCH INTERFACE</h2>
+                        <div class="system-status">
+                            <span class="status-dot"></span>
+                            <span>SYSTEM OPERATIONAL</span>
+                        </div>
+                    </div>
+
+                    <div class="search-info">
+                        <div class="info-row">
+                            <div class="info-label">SCOPE FILTERS:</div>
+                            <div class="scope-buttons">
+                                <button class="scope-btn scope-current {% if scope == 'current' %}active{% endif %}"
+                                        onclick="filterScope('current')">
+                                    CURRENT
+                                </button>
+                                <button class="scope-btn scope-historical {% if scope == 'historical' %}active{% endif %}"
+                                        onclick="filterScope('historical')">
+                                    HISTORICAL
+                                </button>
+                                <button class="scope-btn scope-future"
+                                        onclick="showAuthError()">
+                                    FUTURE (RESTRICTED)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="info-note">
+                            Use scope filters to view specific intelligence categories, or search by keywords below.
+                        </div>
+                    </div>
+
+                    <form method="POST" class="search-form" action="{{ url_for('dashboard') }}">
+                        <input type="text"
+                               name="query"
+                               placeholder="Enter search parameters (keywords, operation names, locations...)"
+                               value="{{ query }}"
+                               class="search-input">
+                        <input type="hidden" name="scope" value="">
+                        <button type="submit" class="btn-search">
+                            <span>🔍</span> EXECUTE QUERY
+                        </button>
+                    </form>
+                </div>
+
+                {% if notes %}
+                <div class="results-section">
+                    <div class="results-header">
+                        <h3>QUERY RESULTS: {{ notes|length }} REPORT(S) FOUND</h3>
+                    </div>
+
+                    <div class="results-grid">
+                        {% for note in notes %}
+                        <div class="intel-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <span class="doc-icon">📄</span>
+                                    {{ note[1] }}
+                                </div>
+                                <div class="card-meta">
+                                    <span class="meta-badge scope-{{ note[4] }}">{{ note[4]|upper }}</span>
+                                    <span class="meta-badge month">{{ note[3] }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {{ note[2] }}
+                            </div>
+                            <div class="card-footer">
+                                <span class="footer-item">📊 Document ID: {{ note[0] }}</span>
+                                <span class="footer-item">🔒 Classification: {% if note[4] == 'future' %}TOP SIX//SEVEN{% else %}UNCLASSIFIED//SIX{% endif %}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% elif query or scope %}
+                <div class="no-results">
+                    <div class="no-results-icon">📭</div>
+                    <h3>NO INTELLIGENCE REPORTS FOUND</h3>
+                    {% if query %}
+                    <p>Query: "{{ query }}"</p>
+                    {% endif %}
+                    {% if scope %}
+                    <p>Scope: {{ scope|upper }}</p>
+                    {% endif %}
+                    <p>Try adjusting your search parameters.</p>
+                </div>
+                {% else %}
+                <div class="welcome-screen">
+                    <svg class="welcome-eagle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 20 L45 30 L40 35 L35 38 L30 40 L25 41 L20 40 L25 45 L30 48 L35 50 L30 52 L25 55 L20 60 L25 59 L30 60 L35 62 L40 65 L45 70 L50 80 L55 70 L60 65 L65 62 L70 60 L75 59 L80 60 L75 55 L70 52 L65 50 L70 48 L75 45 L80 40 L75 41 L70 40 L65 38 L60 35 L55 30 Z"
+                              fill="#3b82f6" stroke="#60a5fa" stroke-width="2" opacity="0.3"/>
+                        <circle cx="50" cy="45" r="8" fill="#1e293b" stroke="#60a5fa" stroke-width="1" opacity="0.3"/>
+                    </svg>
+                    <h3>INTELLIGENCE SEARCH READY</h3>
+                    <p>Select a scope filter or enter search parameters to query the intelligence database.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="sidebar">
+                <div class="quick-tips">
+                    <div class="tip-header">QUICK SEARCH TIPS</div>
+                    <ul>
+                        <li>Use specific keywords for better results</li>
+                        <li>Search by operation name, location, or month</li>
+                        <li>Multiple keywords will return broader results</li>
+                        <li>Use scope filters for category-specific intel</li>
+                        <li>Search is not case-sensitive</li>
+                    </ul>
+
+                    <div class="tip-divider"></div>
+
+                    <div class="tip-header">COMMON SEARCHES</div>
+                    <ul>
+                        <li><strong>Aircraft:</strong> F-22, B-2, RQ-4</li>
+                        <li><strong>Operations:</strong> RED FLAG, BTF</li>
+                        <li><strong>Regions:</strong> PACOM, CENTCOM</li>
+                        <li><strong>Months:</strong> 2025-10, 2025-09, 2025-08</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="classification-banner bottom">
+        <span class="classification-text">UNCLASSIFIED//SIX</span>
+    </div>
+
+    <div class="training-notice">
+        ⚠️ TRAINING ENVIRONMENT - For educational purposes only.
+    </div>
+
+    <script>
+        function closeModal() {
+            document.getElementById('authModal').style.display = 'none';
+        }
+
+        function showAuthError() {
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function filterScope(scopeType) {
+            const form = document.querySelector('.search-form');
+            const scopeInput = form.querySelector('input[name="scope"]');
+            const queryInput = form.querySelector('input[name="query"]');
+
+            scopeInput.value = scopeType;
+            queryInput.value = '';
+            form.submit();
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('authModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

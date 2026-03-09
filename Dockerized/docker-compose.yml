@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: usaf_intel_db
+    environment:
+      POSTGRES_DB: intel
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Password1!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: usaf_intel_web
+    ports:
+      - "5000:5000"
+    environment:
+      DB_NAME: intel
+      DB_USER: postgres
+      DB_PASS: Password1!
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app.py:/app/app.py
+      - ./templates:/app/templates
+      - ./static:/app/static
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 5 &&
+        echo 'Initializing database...' &&
+        python usaf_data_seed.py &&
+        echo 'Starting Flask application...' &&
+        python app.py
+      "
+
+volumes:
+  postgres_data:

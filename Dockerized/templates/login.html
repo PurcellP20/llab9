@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AF DCGS - Distributed Common Ground System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="classification-banner top">
+            <span class="classification-text">UNCLASSIFIED</span>
+        </div>
+
+        {% if has_future_intel %}
+        <div class="success-banner">
+            SEE: CHALLENGE COMPLETED
+        </div>
+        {% endif %}
+
+        <div class="login-box">
+            <div class="header-section">
+                <div class="emblem">
+                    <svg class="eagle-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 20 L45 30 L40 35 L35 38 L30 40 L25 41 L20 40 L25 45 L30 48 L35 50 L30 52 L25 55 L20 60 L25 59 L30 60 L35 62 L40 65 L45 70 L50 80 L55 70 L60 65 L65 62 L70 60 L75 59 L80 60 L75 55 L70 52 L65 50 L70 48 L75 45 L80 40 L75 41 L70 40 L65 38 L60 35 L55 30 Z"
+                              fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
+                        <circle cx="50" cy="45" r="8" fill="#1e293b" stroke="#60a5fa" stroke-width="1"/>
+                        <path d="M50 38 L48 42 L52 42 Z" fill="#60a5fa"/>
+                    </svg>
+                </div>
+                <h1>UNITED STATES AIR FORCE</h1>
+                <h2>DISTRIBUTED COMMON GROUND SYSTEM</h2>
+                <div class="system-id">AF DCGS INTELLIGENCE DATABASE v4.2.1</div>
+            </div>
+
+            {% if error %}
+            <div class="error-message">
+                <span class="error-icon">⚠</span>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="password">ACCESS CODE</label>
+                    <input type="text"
+                           id="password"
+                           name="password"
+                           placeholder="Enter classified access code"
+                           autocomplete="off"
+                           required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span class="btn-icon">🔐</span>
+                    AUTHENTICATE
+                </button>
+            </form>
+
+            <div class="info-section">
+                <div class="warning-box">
+                    <div class="warning-header">⚠ SECURITY NOTICE</div>
+                    <p>This is a U.S. Air Force computer system. Unauthorized access is prohibited by law under policy. All activities are monitored and recorded.</p>
+                </div>
+
+                <div class="system-info">
+                    <div class="info-item">
+                        <span class="label">SYSTEM:</span>
+                        <span class="value">AF DCGS Primary Node</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">LOCATION:</span>
+                        <span class="value">Langley AFB, VA</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">CLEARANCE:</span>
+                        <span class="value">UNCLASSIFIED//SIX</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="classification-banner bottom">
+            <span class="classification-text">UNCLASSIFIED</span>
+        </div>
+
+        <div class="training-notice">
+            ⚠️ TRAINING ENVIRONMENT - For educational purposes only.
+        </div>
+    </div>
+</body>
+</html>
